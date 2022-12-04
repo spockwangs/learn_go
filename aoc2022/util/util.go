@@ -14,10 +14,29 @@ func ReadLines(filename string) ([]string, error) {
 	
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-	lines := make([]string, 10)
+	var lines []string
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
 	return lines, nil
 }
 	
+func MinByte(a ...byte) byte {
+	min := byte(0xFF)
+	for _, i := range a {
+		if min > i {
+			min = i
+		}
+	}
+	return min
+}
+
+func MinInt(a ...int) int {
+	min := int(^uint(0) >> 1)
+	for _, i := range a {
+		if min > i {
+			min = i
+		}
+	}
+	return min
+}
