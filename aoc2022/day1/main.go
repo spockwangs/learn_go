@@ -20,6 +20,10 @@ func (e Elf) sum() int {
 	return total
 }
 
+func (e *Elf) addFood(n int) {
+	e.food = append(e.food, n)
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Printf("Usage: %v filename\n", os.Args[0])
@@ -32,22 +36,18 @@ func main() {
 		return
 	}
 
-	elves := make([]Elf, 10)
-	curElf := Elf {
-		food: make([]int, 10),
-	}
+	var elves []Elf
+	var curElf Elf
 	for _, line := range lines {
 		if len(line) == 0 {
 			elves = append(elves, curElf)
-			curElf = Elf {
-				food: make([]int, 10),
-			}
+			curElf = Elf{}
 		} else {
 			n, err := strconv.Atoi(line)
 			if err != nil {
 				panic(err)
 			}
-			curElf.food = append(curElf.food, n)
+			curElf.addFood(n)
 		}
 	}
 	sort.Slice(elves, func(i, j int) bool {
