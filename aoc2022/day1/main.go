@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"bufio"
 	"os"
 	"sort"
 	"strconv"
+	"github.com/learn_go/aoc2022/util"
 )
 
 type Elf struct {
@@ -30,7 +30,7 @@ func main() {
 		return
 	}
 
-	lines, err := readLines(os.Args[1])
+	lines, err := util.ReadLines(os.Args[1])
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
@@ -56,20 +56,3 @@ func main() {
 	fmt.Printf("%v\n", elves[0].sum())
 	fmt.Printf("%v\n", elves[0].sum() + elves[1].sum() + elves[2].sum())
 }
-
-func readLines(filename string) ([]string, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-	lines := make([]string, 10)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, nil
-}
-	
