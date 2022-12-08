@@ -40,3 +40,15 @@ func MinInt(a ...int) int {
 	}
 	return min
 }
+
+func MaxInt(a ...int) int {
+	var max int
+	for i, e := range a {
+		if i == 0 {
+			max = e
+		} else if max < e {
+			max = e
+		}
+	}
+	return max
+}
