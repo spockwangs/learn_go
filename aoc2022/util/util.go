@@ -52,3 +52,10 @@ func MaxInt(a ...int) int {
 	}
 	return max
 }
+
+func Abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
