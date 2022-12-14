@@ -25,7 +25,8 @@ func main() {
 		segments := parseSegments(line)
 		grid.addSegmentsOfRocks(segments)
 	}
-	fmt.Printf("%v\n", grid.simulate(newPosition(500, 0)))
+	//fmt.Printf("%v\n", grid.simulate(newPosition(500, 0)))
+	fmt.Printf("%v\n", grid.simulate2(newPosition(500, 0)))
 }
 
 func parseSegments(s string) []Position {
@@ -51,7 +52,7 @@ func parseSegments(s string) []Position {
 
 type Grid struct {
 	blocks map[Position]Tile
-	maxY int
+	rockMaxY int
 }
 
 type Tile int
@@ -64,6 +65,7 @@ const (
 func newGrid() *Grid {
 	return &Grid{
 		blocks: make(map[Position]Tile),
+		rockMaxY: 0,
 	}
 }
 
@@ -90,6 +92,9 @@ func (this *Grid) addOneSegmentOfRocks(a, b Position) {
 
 func (this *Grid) addRock(p Position) {
 	this.blocks[p] = ROCK
+	if p.y > this.rockMaxY {
+		this.rockMaxY = p.y
+	}
 }
 
 func (this *Grid) addSand(p Position) {
@@ -101,14 +106,18 @@ func (this *Grid) isEmpty(p Position) bool {
 	return !ok
 }
 
-func (this *Grid) simulate(start Position) int {
-	this.maxY = 0
-	for p := range this.blocks {
-		if p.y > this.maxY {
-			this.maxY = p.y
-		}
+func (this *Grid) isEmpty2(p Position) bool {
+	_, ok := this.blocks[p]
+	if ok {
+		return false
 	}
+	if p.y == this.rockMaxY + 2 {
+		return false
+	}
+	return true
+}
 
+func (this *Grid) simulate(start Position) int {
 	sum := 0
 out:
 	for {
@@ -132,8 +141,34 @@ out:
 	return sum
 }
 
+func (this *Grid) simulate2(start Position) int {
+	sum := 0
+out:
+	for {
+		cur := start
+		for {
+			if n := cur.down(); this.isEmpty2(n) {
+				cur = n
+			} else if n := cur.leftDown(); this.isEmpty2(n) {
+				cur = n
+			} else if n := cur.rightDown(); this.isEmpty2(n) {
+				cur = n
+			} else {
+				this.addSand(cur)
+				sum++
+				if cur == start {
+					break out
+				} else {
+					break
+				}
+			}
+		}
+	}
+	return sum
+}
+
 func (this *Grid) downForever(p Position) bool {
-	for y := p.y; y <= this.maxY; y++ {
+	for y := p.y; y <= this.rockMaxY; y++ {
 		if !this.isEmpty(newPosition(p.x, y)) {
 			return false
 		}
