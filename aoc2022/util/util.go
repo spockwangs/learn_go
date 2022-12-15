@@ -3,6 +3,10 @@ package util
 import (
 	"os"
 	"bufio"
+	"strings"
+	"strconv"
+	"fmt"
+	"unicode"
 )
 
 func ReadLines(filename string) ([]string, error) {
@@ -58,4 +62,24 @@ func Abs(a int) int {
 		return -a
 	}
 	return a
+}
+
+func ConsumeStr(s, prefix string, next *int) {
+	if !strings.HasPrefix(s[*next:], prefix) {
+		panic(fmt.Sprintf("`%v` does not has prefix `%v`", s[*next:], prefix))
+	}
+	*next += len(prefix)
+}
+
+func ConsumeInt(s string, next *int) int {
+	end := *next
+	for end < len(s) && (unicode.IsDigit(rune(s[end])) || s[end] == '-') {
+		end++
+	}
+	n, err := strconv.Atoi(s[*next:end])
+	if err != nil {
+		panic(err)
+	}
+	*next = end
+	return n
 }
