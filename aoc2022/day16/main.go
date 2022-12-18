@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/learn_go/aoc2022/util"
 	"os"
-	"strings"
 	"sort"
+	"strings"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 		return
 	}
 
-	valves := newValves()
+	valves := Valves{}
 	for _, line := range lines {
 		valves.parseValve(line)
 	}
@@ -30,7 +30,7 @@ func main() {
 
 type Valves struct {
 	graph map[string]Valve
-	dist map[Pair]int
+	dist  map[Pair]int
 }
 
 type Pair struct {
@@ -44,23 +44,17 @@ func makePair(a, b string) Pair {
 			b: b,
 		}
 	} else {
-		return Pair {
+		return Pair{
 			a: b,
 			b: a,
 		}
 	}
 }
-			
-type Valve struct {
-	name string
-	flowRate int
-	neighbours []string
-}
 
-func newValves() Valves {
-	return Valves{
-		dist: make(map[Pair]int),
-	}
+type Valve struct {
+	name       string
+	flowRate   int
+	neighbours []string
 }
 
 func (this *Valves) parseValve(s string) {
@@ -99,7 +93,7 @@ func (this *Valves) startFromHelper(
 	bestScore := 0
 	for i, next := range leftValves {
 		dist := this.computeDistance(start, next)
-		if leftTime > dist + 1 {
+		if leftTime > dist+1 {
 			curScore := (leftTime - dist - 1) * this.graph[next].flowRate
 			var newCtx *Context = nil
 			if ctx != nil {
@@ -130,9 +124,9 @@ func (this Valves) startFrom2(start string, timeLimit int) int {
 	for _, v := range ctx.pathScoreMap {
 		pathScores = append(pathScores, v)
 	}
-	bestScore := 0 
+	bestScore := 0
 	for i := range pathScores {
-		for j := i+1; j < len(pathScores); j++ {
+		for j := i + 1; j < len(pathScores); j++ {
 			path1 := pathScores[i].path
 			path2 := pathScores[j].path
 			if !intersect(path1, path2) {
@@ -146,38 +140,41 @@ func (this Valves) startFrom2(start string, timeLimit int) int {
 	return bestScore
 }
 
-// Compute the shortest distance using BFS.
+// Compute the shortest distance using Floyd-Warshall algorithm.
 func (this *Valves) computeDistance(src, dest string) int {
+	if this.dist == nil {
+		this.dist = make(map[Pair]int)
+		for k, v := range this.graph {
+			this.dist[makePair(k, k)] = 0
+			for _, n := range v.neighbours {
+				this.dist[makePair(k, n)] = 1
+			}
+		}
+		for k := range this.graph {
+			for i := range this.graph {
+				for j := range this.graph {
+					ijDist, ok := this.dist[makePair(i, j)]
+					if !ok {
+						ijDist = -1
+					}
+					ikDist, ok := this.dist[makePair(i, k)]
+					if !ok {
+						continue
+					}
+					kjDist, ok := this.dist[makePair(k, j)]
+					if !ok {
+						continue
+					}
+					if ijDist == -1 || ijDist > ikDist+kjDist {
+						this.dist[makePair(i, j)] = ikDist + kjDist
+					}
+				}
+			}
+		}
+	}
 	d, ok := this.dist[makePair(src, dest)]
 	if ok {
 		return d
-	}
-	
-	visited := make(map[string]bool)
-	visited[src] = true
-	tentativeNodes := make(map[string]bool)
-	tentativeNodes[src] = true
-	depth := 0
-	for len(tentativeNodes) > 0 {
-		nextLevel := make(map[string]bool)
-		for cur := range tentativeNodes {
-			this.dist[makePair(src, cur)] = depth
-			if cur == dest {
-				return depth
-			}
-
-			neighbours := this.graph[cur].neighbours
-			for _, n := range neighbours {
-				_, ok := visited[n]
-				if ok {
-					continue
-				}
-				nextLevel[n] = true
-				visited[n] = true
-			}
-		}
-		tentativeNodes = nextLevel
-		depth++
 	}
 	return -1
 }
@@ -192,12 +189,12 @@ func remove(s []string, idx int) []string {
 
 type Context struct {
 	pathScoreMap map[string]PathScore
-	path []string
-	score int
+	path         []string
+	score        int
 }
 
 type PathScore struct {
-	path []string
+	path  []string
 	score int
 }
 
@@ -210,13 +207,13 @@ func newContext() *Context {
 func (this *Context) appendPathScore(node string, score int) *Context {
 	ret := &Context{
 		pathScoreMap: this.pathScoreMap,
-		path: make([]string, len(this.path)),
-		score: this.score,
+		path:         make([]string, len(this.path)),
+		score:        this.score,
 	}
 	copy(ret.path, this.path)
 	ret.path = append(ret.path, node)
 	ret.score += score
-	
+
 	path := make([]string, len(ret.path))
 	copy(path, ret.path)
 	sort.Slice(path, func(i, j int) bool {
@@ -226,7 +223,7 @@ func (this *Context) appendPathScore(node string, score int) *Context {
 	pathScore, ok := this.pathScoreMap[pathStr]
 	if !ok || pathScore.score < ret.score {
 		this.pathScoreMap[pathStr] = PathScore{
-			path: ret.path,
+			path:  ret.path,
 			score: ret.score,
 		}
 	}
