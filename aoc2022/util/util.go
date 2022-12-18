@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"strings"
 	"strconv"
-	"fmt"
 	"unicode"
 )
 
@@ -64,11 +63,31 @@ func Abs(a int) int {
 	return a
 }
 
-func ConsumeStr(s, prefix string, next *int) {
-	if !strings.HasPrefix(s[*next:], prefix) {
-		panic(fmt.Sprintf("`%v` does not has prefix `%v`", s[*next:], prefix))
+func ConsumeStr(s, prefix string, next *int) bool {
+	if strings.HasPrefix(s[*next:], prefix) {
+		*next += len(prefix)
+		return true
 	}
-	*next += len(prefix)
+	return false
+}
+
+func ConsumeStrUntil(s, stop string, next *int) string {
+	end := *next
+	for end < len(s) {
+		if end + len(stop) < len(s) {
+			if s[end:end+len(stop)] != stop {
+				end++
+			} else {
+				break
+			}
+		} else {
+			end = len(s)
+			break
+		}
+	}
+	start := *next
+	*next = MinInt(end + len(stop), len(s))
+	return s[start:end]
 }
 
 func ConsumeInt(s string, next *int) int {
